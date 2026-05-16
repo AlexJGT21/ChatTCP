@@ -26,7 +26,6 @@ public class Encriptador {
     private BigInteger numPub;
     private BigInteger K;
 
-    //metodos de determinacion de clave
 
     /**
      * Constructor por defecto. Inicializa el encriptador asumiendo el rol de Cliente (Iniciador).
@@ -50,7 +49,6 @@ public class Encriptador {
         this.P = datosCliente[1];
         this.numPriv = new BigInteger(P.bitLength(), new Random()).mod(P);
         this.numPub = G.modPow(numPriv, P);
-        //clave determinada
         BigInteger clavePublicaCliente = datosCliente[2];
         this.K = clavePublicaCliente.modPow(numPriv, P);
         this.formatearClave();

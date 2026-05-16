@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
  */
 public class ValidaciónYSanitizacion {
 
-    // Expresión regular para validar el formato estándar de una IPv4 (ej. 192.168.1.1)
     private static final Pattern PATRON_IP = Pattern.compile(
             "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
     );
@@ -26,8 +25,6 @@ public class ValidaciónYSanitizacion {
         if (entrada == null || entrada.isBlank()) {
             return "";
         }
-        // .trim() quita espacios al inicio y final
-        // .replace() elimina nuestro delimitador del protocolo
         return entrada.trim().replace(":", "");
     }
 
@@ -57,7 +54,6 @@ public class ValidaciónYSanitizacion {
         if (puerto == null) {
             return false;
         }
-        // Rango de puertos efímeros o registrados seguros
         return puerto > 1023 && puerto <= 65535;
     }
 
@@ -72,7 +68,6 @@ public class ValidaciónYSanitizacion {
             return false;
         }
 
-        // Limpiamos espacios por si el usuario tecleó un espacio extra al final
         String ipLimpia = ip.trim();
 
         if (ipLimpia.equalsIgnoreCase("localhost")) {

@@ -30,7 +30,6 @@ public class PButton extends JPanel {
      * @param etiqueta
      */
     public PButton(String rutaIcono, String etiqueta) {
-        // configuraciones de diseño
         super(new BorderLayout());
         setBackground(new Color(137, 0, 127));
         JLabel texto = new JLabel(etiqueta, JLabel.CENTER);
@@ -38,13 +37,11 @@ public class PButton extends JPanel {
         texto.setForeground(new Color(0, 0, 0));
         add(texto, BorderLayout.CENTER);
 
-        // configuracion del icono
         ImageIcon icono = new ImageIcon(rutaIcono);
         Image iconoFormateado = icono.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
         JLabel lblImagen = new JLabel(new ImageIcon(iconoFormateado));
         add(lblImagen, BorderLayout.NORTH);
 
-        // metodo hover del boton
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {

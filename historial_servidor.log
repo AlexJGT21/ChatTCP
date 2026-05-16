@@ -86,3 +86,11 @@ may 16, 2026 11:36:03 A.M. utilidades.GestorLogs registrarInfo
 INFORMACIÓN: Handshake criptográfico y autenticación completados con éxito para: pakuhan
 may 16, 2026 11:36:03 A.M. utilidades.GestorLogs registrarInfo
 INFORMACIÓN: El cliente 'pakuhan' se ha unido a la sala.
+may 16, 2026 12:28:09 P.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Servidor 'chat' iniciado exitosamente en 192.168.100.48:5000
+may 16, 2026 12:28:50 P.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: El cliente 'Alfredo' se ha unido a la sala.
+may 16, 2026 12:29:59 P.M. utilidades.GestorLogs registrarAdvertencia
+ADVERTENCIA: El cliente 'Alfredo' perdió la conexión de manera abrupta.
+may 16, 2026 12:29:59 P.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: El cliente 'Alfredo' se ha desconectado limpiamente.

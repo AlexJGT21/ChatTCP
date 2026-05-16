@@ -37,8 +37,8 @@ public class MenuPrincipal extends JFrame {
 
     public MenuPrincipal() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(850, 650); // Un poco más amplio para el nuevo diseño
-        setLocationRelativeTo(null); // Centra la ventana en la pantalla
+        setSize(850, 650);
+        setLocationRelativeTo(null);
         setResizable(false);
         setTitle("TCPvChat");
         setIconImage(new ImageIcon("src/main/resources/chat-icono.png").getImage());
@@ -47,7 +47,6 @@ public class MenuPrincipal extends JFrame {
     }
 
     private void initComponents() {
-        // panel norte (Título)
         JPanel pnlNorte = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 20));
         pnlNorte.setBackground(new Color(33, 1, 46));
         JLabel titulo = new JLabel("TCPvCHAT");
@@ -57,29 +56,24 @@ public class MenuPrincipal extends JFrame {
         pnlNorte.setPreferredSize(new Dimension(getWidth(), 90));
         add(pnlNorte, BorderLayout.NORTH);
 
-        // panel centro
         pnlCentro = new JPanel(new BorderLayout());
 
-        // Usamos GridBagLayout para centrar los 3 botones elegantemente
         pnlContenido = new JPanel(new GridBagLayout());
         pnlContenido.setBackground(new Color(84, 0, 81));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(20, 20, 20, 20); // Márgenes entre botones
+        gbc.insets = new Insets(20, 20, 20, 20);
 
-        // Botón CREAR
         btnCrear = new PButton("src/main/resources/server-icono.png", "CREAR");
         btnCrear.setPreferredSize(new Dimension(250, 250));
         gbc.gridx = 0; gbc.gridy = 0;
         pnlContenido.add(btnCrear, gbc);
 
-        // Botón UNIRSE
         btnUnirse = new PButton("src/main/resources/unirse-icono.png", "UNIRSE");
         btnUnirse.setPreferredSize(new Dimension(250, 250));
         gbc.gridx = 1; gbc.gridy = 0;
         pnlContenido.add(btnUnirse, gbc);
 
-        // Botón REGISTRARSE (Abarca ambas columnas debajo de los anteriores)
         btnRegistrar = new PButton("REGISTRAR NUEVO USUARIO", new Color(167, 11, 175), new Color(137, 0, 127));
         btnRegistrar.setPreferredSize(new Dimension(540, 50));
         gbc.gridx = 0; gbc.gridy = 1;
@@ -89,7 +83,6 @@ public class MenuPrincipal extends JFrame {
         pnlCentro.add(pnlContenido, BorderLayout.CENTER);
         add(pnlCentro, BorderLayout.CENTER);
 
-        // Activamos los eventos de clic
         runBtnCrear();
         runBtnUnirse();
         runBtnRegistrar();
@@ -119,7 +112,6 @@ public class MenuPrincipal extends JFrame {
         });
     }
 
-    // Nuevo evento para abrir la ventana de Registro
     private void runBtnRegistrar() {
         btnRegistrar.addMouseListener(new MouseAdapter() {
             @Override

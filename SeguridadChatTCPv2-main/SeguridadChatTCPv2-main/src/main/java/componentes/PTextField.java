@@ -24,7 +24,7 @@ public class PTextField extends JTextField {
         setHorizontalAlignment(JTextField.CENTER);
         setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0), 2));
 
-        // agrega animaciones
+
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
