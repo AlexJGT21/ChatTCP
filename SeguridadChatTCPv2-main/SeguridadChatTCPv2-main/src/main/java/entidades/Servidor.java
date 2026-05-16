@@ -354,7 +354,7 @@ public class Servidor {
     /**
      * Herramienta auxiliar para contestar al cliente de forma cifrada durante las validaciones.
      *
-     * @param encriptador Motor del cliente objetivo.
+     * @param encriptador Motor del cliente objetivo
      * @param out Flujo de salida del cliente.
      * @param msj Mensaje en texto plano que será cifrado antes de salir.
      * @throws IOException Si falla el envío de red.
