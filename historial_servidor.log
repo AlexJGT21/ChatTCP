@@ -1,0 +1,88 @@
+may 16, 2026 11:08:36 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Servidor 'chat' iniciado exitosamente en 127.0.0.1:5000
+may 16, 2026 11:09:08 A.M. utilidades.GestorLogs registrarAdvertencia
+ADVERTENCIA: Fallo de autenticación para el usuario: Alfredo
+may 16, 2026 11:09:08 A.M. utilidades.GestorLogs registrarError
+GRAVE: Fallo en la lectura de flujos al iniciar servidor
+java.io.IOException: Error de inicio de sesión
+	at entidades.Servidor.validarDatos(Servidor.java:269)
+	at entidades.Servidor.escucharConexiones(Servidor.java:133)
+	at entidades.Servidor.lambda$iniciarServidor$0(Servidor.java:104)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+
+may 16, 2026 11:10:06 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Servidor 'chat' iniciado exitosamente en 127.0.0.1:5000
+may 16, 2026 11:18:32 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:18:54 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Servidor 'Chat' iniciado exitosamente en 127.0.0.1:5000
+may 16, 2026 11:19:10 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:19:10 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Nuevo usuario registrado con éxito: Alfredo
+may 16, 2026 11:19:10 A.M. utilidades.GestorLogs registrarError
+GRAVE: Fallo en la lectura de flujos al iniciar servidor
+java.io.IOException: Registro exitoso. Desconectando...
+	at entidades.Servidor.validarDatos(Servidor.java:256)
+	at entidades.Servidor.escucharConexiones(Servidor.java:133)
+	at entidades.Servidor.lambda$iniciarServidor$0(Servidor.java:104)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+
+may 16, 2026 11:19:25 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:21:50 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Servidor 'Chat' iniciado exitosamente en 127.0.0.1:5000
+may 16, 2026 11:22:08 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:22:08 A.M. utilidades.GestorLogs registrarAdvertencia
+ADVERTENCIA: Intento de registro fallido: Usuario 'Alfredo' ya existe.
+may 16, 2026 11:22:08 A.M. utilidades.GestorLogs registrarError
+GRAVE: Error al procesar la solicitud de un cliente entrante
+java.io.IOException: Nombre ocupado.
+	at entidades.Servidor.validarDatos(Servidor.java:261)
+	at entidades.Servidor.escucharConexiones(Servidor.java:132)
+	at entidades.Servidor.lambda$iniciarServidor$0(Servidor.java:104)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
+
+may 16, 2026 11:22:30 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:22:30 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: El cliente 'Alfredo' se ha unido a la sala.
+may 16, 2026 11:22:30 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Handshake criptográfico y autenticación completados con éxito para: Alfredo
+may 16, 2026 11:27:03 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Servidor 'Jesus' iniciado exitosamente en 127.0.0.1:5000
+may 16, 2026 11:27:19 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:27:20 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Handshake criptográfico y autenticación completados con éxito para: Alfredo
+may 16, 2026 11:27:20 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: El cliente 'Alfredo' se ha unido a la sala.
+may 16, 2026 11:31:20 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Servidor 'Jesus' iniciado exitosamente en 127.0.0.1:5000
+may 16, 2026 11:31:40 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:31:40 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Handshake criptográfico y autenticación completados con éxito para: Alfredo
+may 16, 2026 11:31:40 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: El cliente 'Alfredo' se ha unido a la sala.
+may 16, 2026 11:35:04 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Servidor 'Jesus' iniciado exitosamente en 127.0.0.1:5000
+may 16, 2026 11:35:18 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:35:18 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Handshake criptográfico y autenticación completados con éxito para: Alfredo
+may 16, 2026 11:35:18 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: El cliente 'Alfredo' se ha unido a la sala.
+may 16, 2026 11:35:42 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:35:42 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Nuevo usuario registrado con éxito: pakuhan
+may 16, 2026 11:35:42 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Conexión de registro liberada limpiamente por el servidor.
+may 16, 2026 11:36:03 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Intentando establecer conexión TCP con el servidor en 127.0.0.1:5000
+may 16, 2026 11:36:03 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: Handshake criptográfico y autenticación completados con éxito para: pakuhan
+may 16, 2026 11:36:03 A.M. utilidades.GestorLogs registrarInfo
+INFORMACIÓN: El cliente 'pakuhan' se ha unido a la sala.
