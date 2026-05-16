@@ -1,4 +1,3 @@
-
 package entidades;
 
 import GestionUsuarios.GestionContraseña;
@@ -24,42 +23,49 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOError;
 import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import utilidades.GestorLogs;
 
 /**
- * clase que representa un socket
+ * Clase principal que representa el nodo Servidor del chat.
+ * Administra conexiones de clientes simultáneas, coordina el enrutamiento de
+ * mensajes (públicos y privados), gestiona los historiales del chat y maneja
+ * el control de acceso y registro de cuentas.
  *
  * @author erubiel
  */
 public class Servidor {
 
-    //variables globales
     private ServerSocket socket;
     private static HashMap<ObjectOutputStream, Encriptador> encriptadores = new HashMap<>();
     private static HashMap<String, ObjectOutputStream> clientes = new HashMap<>();
     private static LinkedList<String> historial = new LinkedList<>();
 
-    // variables de instancia
     private String nombreServidor;
     private int capacidad;
     private InetAddress ip;
     private int puerto;
     private String nombreAdmin;
 
-    // componentes de la interfaz
     private JChat pnlChat;
     private JTextArea chat;
     private PTextField texto;
     private PButton btnEnviar;
-    
-    //Capacidad del servidor
+
     private int clientesOn = 0;
     private static final String USUARIOS = "usuarios_registrados";
     private HashMap<String, String> dbUsuarios = cargarUsuarios();
 
+    /**
+     * Constructor del Servidor.
+     *
+     * @param nombreServidor Nombre visible de la sala de chat.
+     * @param nombreAdmin Nickname del administrador del servidor.
+     * @param ip IP en la que el servidor escuchará peticiones.
+     * @param puerto Puerto TCP a abrir.
+     * @param capacidad Límite máximo de usuarios simultáneos.
+     * @throws IOException Si la IP no puede ser resuelta.
+     */
     public Servidor(String nombreServidor, String nombreAdmin, String ip, int puerto, int capacidad) throws IOException {
         this.nombreServidor = nombreServidor;
         this.nombreAdmin = nombreAdmin;
@@ -69,10 +75,10 @@ public class Servidor {
     }
 
     /**
-     * metodo que permite dar control al servidor sobre sus componentres
-     * graficos
+     * Vincula la interfaz gráfica del administrador del servidor para poder
+     * reflejar mensajes locales y eventos.
      *
-     * @param pnlChat
+     * @param pnlChat Panel JChat principal del administrador.
      */
     public void asignarComponentes(JChat pnlChat) {
         this.pnlChat = pnlChat;
@@ -81,56 +87,77 @@ public class Servidor {
         this.texto = pnlChat.getTxtMensaje();
     }
 
-    //metodos de coneccion principales
     /**
-     * inicia el servidor
+     * Enciende el ServerSocket y delega la aceptación de clientes entrantes
+     * a un hilo separado para mantener la GUI fluida.
      *
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException Si el puerto está ocupado o hay un fallo de I/O.
+     * @throws ClassNotFoundException Si hay errores al interpretar los flujos.
      */
     public void iniciarServidor() throws IOException, ClassNotFoundException {
         socket = new ServerSocket(puerto, capacidad, ip);
         chat.append("Servidor " + nombreServidor + " iniciado\n");
+
+        GestorLogs.registrarInfo("Servidor '" + nombreServidor + "' iniciado exitosamente en " + ip.getHostAddress() + ":" + puerto);
+
         new Thread(() -> {
             try {
                 escucharConexiones(socket);
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
             } catch (Exception ex) {
-                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+                GestorLogs.registrarError("Excepción crítica: El servidor se ha detenido por completo", ex);
             }
         }).start();
 
-        // Agregar el ActionListener al botón de enviar
         runBtnEnviar();
     }
-        
-    /**
-     * escucha las conecciones entrantes
-     *
-     * @param socket
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
-    private void escucharConexiones(ServerSocket socket) throws IOException, ClassNotFoundException, Exception {
-        while (true) {
-            Socket cliente = socket.accept();
-            ObjectOutputStream out = new ObjectOutputStream(cliente.getOutputStream()); //wrapper salida
-            out.flush();
-            ObjectInputStream in = new ObjectInputStream(cliente.getInputStream()); //wrapper ingreso
 
-            Encriptador en = handshake(in, out); //determina una clave secreta de comunicacion
-            String nombreCliente = validarDatos(en, in, out); //determina si el cliente es valido
-            clientes.put(nombreCliente, out); //agrega el cliente a la lista de clientes
-            pnlChat.dibujaUsuario(nombreCliente);
-            new Thread(() -> manejaUsuario(en, cliente, in, out, nombreCliente)).start();; //asignar un hilo para el cliente
+    /**
+     * Bucle continuo que espera nuevas conexiones TCP (socket.accept).
+     * Por cada cliente, realiza el handshake, lo autentica y le asigna
+     * un hilo dedicado (manejaUsuario) para su tráfico asíncrono.
+     *
+     * @param socket El ServerSocket escuchando.
+     * @throws IOException Fallos de I/O de red.
+     * @throws ClassNotFoundException Fallo de casteo de objetos entrantes.
+     * @throws Exception Excepciones generales de validación o criptografía.
+     */
+    private void escucharConexiones(ServerSocket socket) throws Exception {
+        while (true) {
+            try {
+                Socket cliente = socket.accept();
+                ObjectOutputStream out = new ObjectOutputStream(cliente.getOutputStream());
+                out.flush();
+                ObjectInputStream in = new ObjectInputStream(cliente.getInputStream());
+
+                Encriptador en = handshake(in, out);
+                String nombreCliente = validarDatos(en, in, out);
+
+                clientes.put(nombreCliente, out);
+                pnlChat.dibujaUsuario(nombreCliente);
+                new Thread(() -> manejaUsuario(en, cliente, in, out, nombreCliente)).start();
+
+            } catch (IOException e) {
+                if (e.getMessage() != null && e.getMessage().contains("Registro exitoso")) {
+                    GestorLogs.registrarInfo("Conexión de registro liberada limpiamente por el servidor.");
+                } else {
+                    GestorLogs.registrarError("Error al procesar la solicitud de un cliente entrante", e);
+                }
+            } catch (ClassNotFoundException e) {
+                GestorLogs.registrarError("Se recibió un objeto corrupto o no reconocido durante el acceso", e);
+            }
         }
     }
 
     /**
-     * maneja la coneccion de un usuario
+     * Hilo dedicado para atender a un usuario específico conectado.
+     * Recibe los mensajes encriptados, los analiza en busca de comandos
+     * como "/salir" o comandos privados "/priv", y rutea el texto en consecuencia.
      *
-     * @param cliente
+     * @param encriptador Motor de cifrado vinculado a este cliente.
+     * @param socket Socket de la conexión con el cliente.
+     * @param in Flujo de entrada de datos.
+     * @param out Flujo de salida de datos.
+     * @param nombreCliente El nombre verificado del usuario.
      */
     private void manejaUsuario(Encriptador encriptador, Socket socket, ObjectInputStream in, ObjectOutputStream out, String nombreCliente) {
         try {
@@ -144,13 +171,12 @@ public class Servidor {
                     String mensajeDecifrado = encriptador.getMensaje();
                     matcherPriv = patronPriv.matcher(mensajeDecifrado);
 
-                    if (mensajeDecifrado.equalsIgnoreCase("/salir")) { //si quiere salir se sale de una
+                    if (mensajeDecifrado.equalsIgnoreCase("/salir")) {
                         break;
-                    } else if (matcherPriv.matches()) { //evalua si quiere enviar un mensaje privado
+                    } else if (matcherPriv.matches()) {
                         String destinatario = matcherPriv.group(1);
-                        System.out.println(destinatario);
                         String msjPriv = matcherPriv.group(2);
-                        System.out.println(msjPriv);
+                        GestorLogs.registrarInfo("El cliente '" + nombreCliente + "' envió un mensaje privado a '" + destinatario + "'.");
                         enviarMensajePrivado(nombreCliente, destinatario, msjPriv);
                     } else {
                         enviarMensaje(nombreCliente, mensajeDecifrado);
@@ -159,13 +185,17 @@ public class Servidor {
             }
         } catch (IOException | ClassNotFoundException e) {
             try {
+                GestorLogs.registrarAdvertencia("El cliente '" + nombreCliente + "' perdió la conexión de manera abrupta.");
                 socket.close();
                 pnlChat.eliminarUsuario(nombreCliente);
                 encriptadores.remove(out);
                 clientes.remove(nombreCliente);
+
+                notificarSalidaUsuario(nombreCliente);
+
                 enviarMensaje("SERVIDOR", "Cliente Ha Perdido La Conexion: " + nombreCliente);
             } catch (IOException e1) {
-                e1.printStackTrace();
+                GestorLogs.registrarError("Error al cerrar conexión perdida de: " + nombreCliente, e1);
             }
         } finally {
             try {
@@ -174,97 +204,115 @@ public class Servidor {
                 pnlChat.eliminarUsuario(nombreCliente);
                 encriptadores.remove(out);
                 clientes.remove(nombreCliente);
+
+                notificarSalidaUsuario(nombreCliente);
+
+                GestorLogs.registrarInfo("El cliente '" + nombreCliente + "' se ha desconectado limpiamente.");
                 enviarMensaje("SERVIDOR", "Cliente Se Ha Desconectado: " + nombreCliente);
             } catch (IOException e) {
-                e.printStackTrace();
+                GestorLogs.registrarError("Error al cerrar socket en desconexión limpia de: " + nombreCliente, e);
             }
         }
     }
 
-    //metodos de coneccion auxiliares
     /**
-     * recibe los parametros de alice y manda los de bob
+     * Ejecuta el protocolo Diffie-Hellman del lado del Servidor.
      *
-     * @param cliente
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @param in Flujo de entrada para recibir parámetros.
+     * @param out Flujo de salida para devolver parámetros.
+     * @return Un objeto Encriptador listo y sincronizado.
+     * @throws IOException Fallos de I/O.
+     * @throws ClassNotFoundException Objeto inesperado en el flujo.
      */
     private Encriptador handshake(ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException {
-        BigInteger[] aliceParam = (BigInteger[]) in.readObject();
-        Encriptador encriptador = new Encriptador(aliceParam); //manda los parametros de bob
+        BigInteger[] clienteParam = (BigInteger[]) in.readObject();
+        Encriptador encriptador = new Encriptador(clienteParam);
         out.writeObject(encriptador.getParam());
         out.flush();
         out.reset();
         return encriptador;
     }
 
+    /**
+     * Interpreta la trama inicial del cliente ("ACCION:USUARIO:PASSWORD").
+     * Determina si es un REGISTRO o LOGIN y aplica validaciones lógicas
+     * de servidor lleno, usuarios duplicados o contraseñas inválidas.
+     *
+     * @param encriptador Motor criptográfico para leer la trama de forma segura.
+     * @param in Flujo de entrada.
+     * @param out Flujo de salida.
+     * @return El nombre del cliente validado exitosamente.
+     * @throws IOException Si la validación falla (lanza excepción para desconectar).
+     * @throws ClassNotFoundException Si la trama no es interpretable.
+     * @throws Exception Para otras condiciones anómalas.
+     */
     private String validarDatos(Encriptador encriptador, ObjectInputStream in, ObjectOutputStream out) throws IOException, ClassNotFoundException, Exception {
-        String mensaje = (String) in.readObject();// recibe el nombre del cliente de manera segura
+        String mensaje = (String) in.readObject();
         encriptador.setMensaje(mensaje);
         encriptador.decifrar();
         String contenidoCompleto = encriptador.getMensaje();
         String[] partes = contenidoCompleto.split(":", 3);
-        
+
         if (partes.length < 3) {
             throw new IOException("Protocolo de datos invalido.");
         }
-        
+
         String accion = partes[0];
         String nombreCliente = partes[1];
         String passwordTxt = partes[2];
-                
-        //Logica de registro.
+
         if (accion.equalsIgnoreCase("REGISTRO")) {
             if (dbUsuarios.containsKey(nombreCliente)) {
                 enviarRespuestaSegura(encriptador, out, "Error: Usuario ya existe");
+                GestorLogs.registrarAdvertencia("Intento de registro fallido: Usuario '" + nombreCliente + "' ya existe.");
                 throw new IOException("Nombre ocupado.");
             }
             guardarUsuario(nombreCliente, GestionUsuarios.GestionContraseña.hashPassword(passwordTxt));
+            GestorLogs.registrarInfo("Nuevo usuario registrado con éxito: " + nombreCliente);
             enviarRespuestaSegura(encriptador, out, "LOGIN COMPLETO: Registro exitoso");
             throw new IOException("Registro exitoso. Desconectando...");
         }
-        
-        //Logica de login.
+
         if (accion.equalsIgnoreCase("LOGIN")) {
-            //Validacion de capacidad
             if (clientesOn >= capacidad) {
                 enviarRespuestaSegura(encriptador, out, "Error: Servidor lleno");
+                GestorLogs.registrarAdvertencia("Conexión rechazada para '" + nombreCliente + "': Servidor lleno.");
                 throw new IOException("Servidor lleno");
             }
-            //Validacion de existencia de usuario y password
             String hash = dbUsuarios.get(nombreCliente);
             if (hash == null || !GestionContraseña.checkPassword(passwordTxt, hash)) {
                 enviarRespuestaSegura(encriptador, out, "Error: Constraseña incorrecta");
+                GestorLogs.registrarAdvertencia("Fallo de autenticación para el usuario: " + nombreCliente);
                 throw new IOException("Error de inicio de sesión");
             }
-            //Validacion de conexion (si ya esta conectado)
             if (clientes.containsKey(nombreCliente)) {
                 enviarRespuestaSegura(encriptador, out, "Error: El usuario ya esta conectado");
+                GestorLogs.registrarAdvertencia("El usuario '" + nombreCliente + "' intentó iniciar sesión doble.");
                 throw new IOException("Usuario en linea");
             }
             clientesOn++;
             enviarRespuestaSegura(encriptador, out, "OK");
-        }                
+        }
 
-        //validacion de nombre (no nombres reptidos, no nombres de admin, no nombres de servidor)
         if (nombreCliente.equals(nombreAdmin) || nombreCliente.equals("SERVIDOR") || clientes.containsKey(nombreCliente)) {
             enviarRespuestaSegura(encriptador, out, "ERROR: Nombre reservado.");
+            GestorLogs.registrarAdvertencia("El usuario intentó usar un nombre reservado: " + nombreCliente);
             throw new IOException("Nombre de usuario no valido");
         } else {
-            encriptadores.put(out, encriptador);//agrega el cliente a la lista de clientes    
-            encriptador.setMensaje(nombreServidor);// manda el nombre del servidor de manera segura una vez aceptado
+            encriptadores.put(out, encriptador);
+
+            encriptador.setMensaje(nombreServidor);
             encriptador.cifrar();
             out.writeObject(encriptador.getMensaje());
             out.flush();
             out.reset();
 
-            encriptador.setMensaje(nombreAdmin);// manda el nombre del admin de manera segura una vez aceptado
+            encriptador.setMensaje(nombreAdmin);
             encriptador.cifrar();
             out.writeObject(encriptador.getMensaje());
             out.flush();
             out.reset();
 
-            // manda el historial de mensajes al cliente
             for (String m : historial) {
                 encriptador.setMensaje(m);
                 encriptador.cifrar();
@@ -272,11 +320,45 @@ public class Servidor {
                 out.flush();
                 out.reset();
             }
+
+            clientes.forEach((nombreActivo, outActivo) -> {
+                try {
+                    encriptador.setMensaje("USER_JOIN:" + nombreActivo);
+                    encriptador.cifrar();
+                    out.writeObject(encriptador.getMensaje());
+                    out.flush();
+                    out.reset();
+                } catch (IOException e) {
+                    GestorLogs.registrarError("Error al enviar lista de usuarios previos", e);
+                }
+            });
+
+            encriptadores.forEach((outTarget, encTarget) -> {
+                try {
+                    encTarget.setMensaje("USER_JOIN:" + nombreCliente);
+                    encTarget.cifrar();
+                    outTarget.writeObject(encTarget.getMensaje());
+                    outTarget.flush();
+                    outTarget.reset();
+                } catch (IOException e) {
+                    GestorLogs.registrarError("Error al notificar nuevo usuario en línea", e);
+                }
+            });
+
+            GestorLogs.registrarInfo("El cliente '" + nombreCliente + "' se ha unido a la sala.");
             enviarMensaje("SERVIDOR", "Nuevo Cliente Conectado: " + nombreCliente);
         }
         return nombreCliente;
     }
-    
+
+    /**
+     * Herramienta auxiliar para contestar al cliente de forma cifrada durante las validaciones.
+     *
+     * @param encriptador Motor del cliente objetivo.
+     * @param out Flujo de salida del cliente.
+     * @param msj Mensaje en texto plano que será cifrado antes de salir.
+     * @throws IOException Si falla el envío de red.
+     */
     private void enviarRespuestaSegura(Encriptador encriptador, ObjectOutputStream out, String msj) throws IOException {
         encriptador.setMensaje(msj);
         encriptador.cifrar();
@@ -286,10 +368,11 @@ public class Servidor {
     }
 
     /**
-     * envia un mensaje al cliente
+     * Transmite un mensaje global (broadcast) a todos los clientes conectados.
      *
-     * @param mensaje
-     * @throws IOException
+     * @param emisor Quién generó el mensaje.
+     * @param mensaje El cuerpo del mensaje.
+     * @throws IOException Si ocurre error al intentar escribir en algún socket.
      */
     private void enviarMensaje(String emisor, String mensaje) throws IOException {
         String tiempo = String.format("%02d:%02d", Calendar.getInstance().get(Calendar.HOUR_OF_DAY), Calendar.getInstance().get(Calendar.MINUTE));
@@ -303,7 +386,7 @@ public class Servidor {
                 out.flush();
                 out.reset();
             } catch (IOException e) {
-                System.err.println("Error al enviar el mensaje a " + socket.getInetAddress());
+                GestorLogs.registrarError("Error al enviar mensaje global a un cliente.", e);
             }
         });
         chat.append(msjFormateado + "\n");
@@ -311,18 +394,20 @@ public class Servidor {
     }
 
     /**
-     * metodo que permite enviar mensajes privados
+     * Localiza a un cliente específico en el HashMap y le manda un mensaje
+     * directo cifrado, invisible para el resto de clientes.
      *
-     * @param nombreServidor
+     * @param emisor Nombre del remitente.
+     * @param destinatario Nombre del receptor deseado.
+     * @param mensaje Cuerpo del mensaje privado.
+     * @throws IOException Excepciones de red I/O.
      */
     private void enviarMensajePrivado(String emisor, String destinatario, String mensaje) throws IOException {
         String tiempo = String.format("%02d:%02d", Calendar.getInstance().get(Calendar.HOUR_OF_DAY), Calendar.getInstance().get(Calendar.MINUTE));
         final String msjFormateado = "[" + tiempo + "][" + emisor + "]: " + mensaje;
         clientes.forEach((nombre, out) -> {
-            System.out.println("Entró al metodo enviarMensajePrivado");
             if (nombre.equals(destinatario)) {
                 try {
-                    System.out.println("Entro al if");
                     Encriptador enc = encriptadores.get(out);
                     if (enc != null) {
                         enc.setMensaje(msjFormateado);
@@ -332,18 +417,31 @@ public class Servidor {
                     out.flush();
                     out.reset();
                 } catch (IOException e) {
-                    System.out.println("Error al enviar el mensaje a " + nombre);
-                    e.printStackTrace();
+                    GestorLogs.registrarError("Error al enviar mensaje privado a: " + nombre, e);
                 }
             }
         });
     }
 
     /**
-     * envia un mensaje al cliente
-     *
-     * @param mensaje
-     * @throws IOException
+     * Envía un comando de remoción a todos los clientes restantes cuando alguien se sale del chat.
+     */
+    private void notificarSalidaUsuario(String nombreCliente) {
+        encriptadores.forEach((outTarget, encTarget) -> {
+            try {
+                encTarget.setMensaje("USER_LEAVE:" + nombreCliente);
+                encTarget.cifrar();
+                outTarget.writeObject(encTarget.getMensaje());
+                outTarget.flush();
+                outTarget.reset();
+            } catch (IOException e) {
+            }
+        });
+    }
+
+    /**
+     * Vincula el botón físico de la GUI del Servidor para que el Administrador
+     * envíe comandos o mensajes como "Admin".
      */
     private void runBtnEnviar() {
         btnEnviar.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -352,23 +450,34 @@ public class Servidor {
                 try {
                     enviarMensaje(nombreAdmin, texto.getText());
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    GestorLogs.registrarError("Error al enviar mensaje local como Administrador", ex);
                 } finally {
                     texto.setText("");
                 }
             }
         });
     }
-    
+
+    /**
+     * Escribe un nuevo usuario y su hash en un archivo local .txt como base de datos simple.
+     *
+     * @param user Nombre del usuario registrado.
+     * @param hash Contraseña previamente transformada por BCrypt.
+     */
     private void guardarUsuario(String user, String hash) {
         try (PrintWriter out = new PrintWriter(new FileWriter(USUARIOS, true))){
             out.println(user + ":" + hash);
-            dbUsuarios.put(user, hash);            
+            dbUsuarios.put(user, hash);
         } catch (IOException e) {
-            e.printStackTrace();
+            GestorLogs.registrarError("Error al guardar nuevo usuario en archivo local", e);
         }
     }
-    
+
+    /**
+     * Lee la persistencia local de usuarios durante la inicialización del servidor.
+     *
+     * @return Estructura HashMap en memoria con pares Usuario -> Hash de Password.
+     */
     private HashMap<String, String> cargarUsuarios() {
         HashMap<String, String> usuarios = new HashMap<>();
         File file = new File(USUARIOS);
@@ -384,8 +493,8 @@ public class Servidor {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            GestorLogs.registrarError("Error al leer la base de datos de usuarios locales", e);
         }
         return usuarios;
-    }    
+    }
 }

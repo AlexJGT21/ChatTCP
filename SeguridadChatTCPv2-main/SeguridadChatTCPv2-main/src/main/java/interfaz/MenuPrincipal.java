@@ -1,4 +1,3 @@
-
 package interfaz;
 
 import javax.swing.JFrame;
@@ -11,43 +10,35 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import componentes.PButton;
 import componentes.PMenuCliente;
 import componentes.PMenuServidor;
-
-import java.io.IOException;
-
+import PantallasRegistros.Registro; // Importamos tu pantalla de registro
 
 /**
- * clase que representa una ventana principal de un chat
- * 
- * @author erubiel
+ * Clase que representa la ventana principal de arranque de la aplicación.
  */
 public class MenuPrincipal extends JFrame {
-    //private String operacion;
     private JPanel pnlContenido;
     private PButton btnCrear;
     private PButton btnUnirse;
+    private PButton btnRegistrar; // Nuevo botón agregado
     private JPanel pnlCentro;
 
-
-    /**
-     * @param args the command line arguments
-     * @throws ClassNotFoundException 
-     */
-    public static void main(String[] args) throws IOException, ClassNotFoundException{
+    public static void main(String[] args) {
         new MenuPrincipal().setVisible(true);
     }
 
-    /**
-     * Metodo constructor de la ventana
-     */
     public MenuPrincipal() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(850, 650); // Un poco más amplio para el nuevo diseño
+        setLocationRelativeTo(null); // Centra la ventana en la pantalla
         setResizable(false);
         setTitle("TCPvChat");
         setIconImage(new ImageIcon("src/main/resources/chat-icono.png").getImage());
@@ -55,11 +46,8 @@ public class MenuPrincipal extends JFrame {
         initComponents();
     }
 
-    /**
-     * Metodo que inicializa los componentes visuales de la ventana
-     */
     private void initComponents() {
-        // panel norte
+        // panel norte (Título)
         JPanel pnlNorte = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 20));
         pnlNorte.setBackground(new Color(33, 1, 46));
         JLabel titulo = new JLabel("TCPvCHAT");
@@ -70,25 +58,41 @@ public class MenuPrincipal extends JFrame {
         add(pnlNorte, BorderLayout.NORTH);
 
         // panel centro
-        pnlCentro = new JPanel();
-        pnlCentro.setLayout(new BorderLayout());
+        pnlCentro = new JPanel(new BorderLayout());
 
-        pnlContenido = new JPanel();
+        // Usamos GridBagLayout para centrar los 3 botones elegantemente
+        pnlContenido = new JPanel(new GridBagLayout());
         pnlContenido.setBackground(new Color(84, 0, 81));
-        pnlContenido.setLayout(null);
 
-        // botones
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(20, 20, 20, 20); // Márgenes entre botones
+
+        // Botón CREAR
         btnCrear = new PButton("src/main/resources/server-icono.png", "CREAR");
-        btnUnirse = new PButton("src/main/resources/unirse-icono.png", "UNIRSE");
-        btnCrear.setBounds(120, 120, 250, 250); // x, y, width, height
-        btnUnirse.setBounds(420, 120, 250, 250); // Adjust size and position
-        pnlContenido.add(btnCrear);
-        pnlContenido.add(btnUnirse);
-        pnlCentro.add(pnlContenido, BorderLayout.CENTER);
+        btnCrear.setPreferredSize(new Dimension(250, 250));
+        gbc.gridx = 0; gbc.gridy = 0;
+        pnlContenido.add(btnCrear, gbc);
 
+        // Botón UNIRSE
+        btnUnirse = new PButton("src/main/resources/unirse-icono.png", "UNIRSE");
+        btnUnirse.setPreferredSize(new Dimension(250, 250));
+        gbc.gridx = 1; gbc.gridy = 0;
+        pnlContenido.add(btnUnirse, gbc);
+
+        // Botón REGISTRARSE (Abarca ambas columnas debajo de los anteriores)
+        btnRegistrar = new PButton("REGISTRAR NUEVO USUARIO", new Color(167, 11, 175), new Color(137, 0, 127));
+        btnRegistrar.setPreferredSize(new Dimension(540, 50));
+        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridwidth = 2; // Ocupa las dos columnas
+        pnlContenido.add(btnRegistrar, gbc);
+
+        pnlCentro.add(pnlContenido, BorderLayout.CENTER);
         add(pnlCentro, BorderLayout.CENTER);
+
+        // Activamos los eventos de clic
         runBtnCrear();
         runBtnUnirse();
+        runBtnRegistrar();
     }
 
     private void runBtnCrear() {
@@ -111,6 +115,17 @@ public class MenuPrincipal extends JFrame {
                 pnlCentro.add(new PMenuCliente(pnlContenido), BorderLayout.CENTER);
                 pnlCentro.revalidate();
                 pnlCentro.repaint();
+            }
+        });
+    }
+
+    // Nuevo evento para abrir la ventana de Registro
+    private void runBtnRegistrar() {
+        btnRegistrar.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Registro ventanaRegistro = new Registro();
+                ventanaRegistro.setVisible(true);
             }
         });
     }

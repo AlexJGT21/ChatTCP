@@ -1,15 +1,22 @@
-
 package componentes;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import entidades.Servidor;
+import utilidades.ValidaciónYSanitizacion;
 
 public class PMenuServidor extends JPanel {
 
@@ -22,116 +29,146 @@ public class PMenuServidor extends JPanel {
     private PTextField txtCapacidad;
     private int capacidad = 0;
     private JPanel pnlPadre;
-    
-    //Datos del cliente
+
+
     private String usuarioPendiente;
     private String passwordPendiente;
     private String tipoOperacion;
 
-    public PMenuServidor() {
-    }
+    public PMenuServidor() {}
 
     public PMenuServidor(JPanel pnlPadre, String usuarioPendiente, String passwordPendiente, String tipoOperacion) {
         this(pnlPadre);
         this.usuarioPendiente = usuarioPendiente;
         this.passwordPendiente = passwordPendiente;
         this.tipoOperacion = tipoOperacion;
-        
+
         entradas.get(4).setText(this.usuarioPendiente);
         entradas.get(4).setEditable(false);
-    }        
-    
+    }
+
     public PMenuServidor(JPanel pnlPadre) {
-        super(null);
+
+        super(new GridBagLayout());
         this.pnlPadre = pnlPadre;
         setBackground(new Color(84, 0, 81));
 
         Font font = new Font("Oswald", Font.PLAIN, 20);
-        //label de nombre del servidor
-        JLabel lblNomServidor = new JLabel("Nombre Del Servidor");
+
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 15, 8, 15);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+
+
+        JLabel lblNomServidor = new JLabel("Nombre Del Servidor:");
         lblNomServidor.setForeground(Color.WHITE);
         lblNomServidor.setFont(font);
-        lblNomServidor.setBounds(150, 50, 200, 30);
-        //JTextField de nombre del servidor
-        PTextField txtNomServer = new PTextField();
-        txtNomServer.setBounds(350, 50, 230, 30);
 
-        //label de capacidad
-        JLabel lblCapacidad = new JLabel("Capacidad");
+        PTextField txtNomServer = new PTextField();
+        txtNomServer.setPreferredSize(new Dimension(250, 35));
+
+        gbc.gridx = 0; gbc.gridy = 0;
+        add(lblNomServidor, gbc);
+        gbc.gridx = 1; gbc.gridy = 0;
+        add(txtNomServer, gbc);
+
+
+        JLabel lblCapacidad = new JLabel("Capacidad:");
         lblCapacidad.setForeground(Color.WHITE);
         lblCapacidad.setFont(font);
-        lblCapacidad.setBounds(150, 100, 200, 30);
-        //JTextField de capacidad
-        txtCapacidad = new PTextField();
 
+
+        JPanel pnlCapacidad = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        pnlCapacidad.setOpaque(false);
+
+        txtCapacidad = new PTextField();
         txtCapacidad.setText(String.valueOf(capacidad));
         txtCapacidad.setEditable(false);
         txtCapacidad.setFocusable(false);
-        txtCapacidad.setBounds(350, 100, 130, 30);
-        //boton de menos
-        btnMenos = new PButton("-",null,null);
-        btnMenos.setBounds(480, 100, 50, 30);
-        //boton de mas
-        btnMas = new PButton("+", null, null);
-        btnMas.setBounds(530, 100, 50, 30);
-  
+        txtCapacidad.setPreferredSize(new Dimension(100, 35));
 
-        //label de ip
-        JLabel lblIp = new JLabel("IP Del Servidor");
+        btnMenos = new PButton("-", null, null);
+        btnMenos.setPreferredSize(new Dimension(40, 35));
+
+        btnMas = new PButton("+", null, null);
+        btnMas.setPreferredSize(new Dimension(40, 35));
+
+        pnlCapacidad.add(txtCapacidad);
+        pnlCapacidad.add(btnMenos);
+        pnlCapacidad.add(btnMas);
+
+        gbc.gridx = 0; gbc.gridy = 1;
+        add(lblCapacidad, gbc);
+        gbc.gridx = 1; gbc.gridy = 1;
+        add(pnlCapacidad, gbc);
+
+
+        JLabel lblIp = new JLabel("IP Del Servidor:");
         lblIp.setForeground(Color.WHITE);
         lblIp.setFont(font);
-        lblIp.setBounds(150, 150, 200, 30); //x, y, width, height
-        //JTextField de ip
-        PTextField txtIp = new PTextField();
-        txtIp.setBounds(350, 150, 230, 30);
 
-        //label de puerto
-        JLabel lblPuerto = new JLabel("Puerto Del Servidor");
+        PTextField txtIp = new PTextField();
+        txtIp.setPreferredSize(new Dimension(250, 35));
+
+        gbc.gridx = 0; gbc.gridy = 2;
+        add(lblIp, gbc);
+        gbc.gridx = 1; gbc.gridy = 2;
+        add(txtIp, gbc);
+
+
+        JLabel lblPuerto = new JLabel("Puerto Del Servidor:");
         lblPuerto.setForeground(Color.WHITE);
         lblPuerto.setFont(font);
-        lblPuerto.setBounds(150, 200, 200, 30);
-        //JTextField de puerto
+
         PTextField txtPuerto = new PTextField();
         txtPuerto.setCampoNumerico();
-        txtPuerto.setBounds(350, 200, 230, 30);
+        txtPuerto.setPreferredSize(new Dimension(250, 35));
 
-        JLabel lblNombre = new JLabel("Nombre De Administrador");
+        gbc.gridx = 0; gbc.gridy = 3;
+        add(lblPuerto, gbc);
+        gbc.gridx = 1; gbc.gridy = 3;
+        add(txtPuerto, gbc);
+
+
+        JLabel lblNombre = new JLabel("Nombre De Administrador:");
         lblNombre.setForeground(Color.WHITE);
         lblNombre.setFont(font);
-        lblNombre.setBounds(150, 250, 200, 30);
-        //JTextField de puerto
+
         PTextField txtNombre = new PTextField();
-        txtNombre.setBounds(350, 250, 230, 30);        
+        txtNombre.setPreferredSize(new Dimension(250, 35));
 
-        btnRegresar = new PButton("REGRESAR",null,null);
-        btnRegresar.setBounds(150, 300, 200, 30);
-        btnCrear = new PButton("CREAR",null,null);
-        btnCrear.setBounds(380, 300, 200, 30);
+        gbc.gridx = 0; gbc.gridy = 4;
+        add(lblNombre, gbc);
+        gbc.gridx = 1; gbc.gridy = 4;
+        add(txtNombre, gbc);
 
-        //añadir los componentes al panel
-        add(lblNomServidor);
-        add(txtNomServer);
-        add(lblCapacidad);
-        add(txtCapacidad);
-        add(btnMas);
-        add(btnMenos);
-        add(lblIp);
-        add(txtIp);
-        add(lblPuerto);
-        add(txtPuerto);
-        add(lblNombre);
-        add(txtNombre);
-        add(btnRegresar);
-        add(btnCrear);
 
-        //añadir los componentes a la lista
+        btnRegresar = new PButton("REGRESAR", null, null);
+        btnRegresar.setPreferredSize(new Dimension(150, 40));
+
+        btnCrear = new PButton("CREAR", null, null);
+        btnCrear.setPreferredSize(new Dimension(150, 40));
+
+
+        JPanel pnlBotones = new JPanel(new GridLayout(1, 2, 20, 0));
+        pnlBotones.setOpaque(false);
+        pnlBotones.add(btnRegresar);
+        pnlBotones.add(btnCrear);
+
+        gbc.gridx = 0; gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(20, 15, 10, 15);
+        add(pnlBotones, gbc);
+
+
         entradas.add(txtNomServer);
         entradas.add(txtCapacidad);
         entradas.add(txtIp);
         entradas.add(txtPuerto);
         entradas.add(txtNombre);
-        
-        //añadir eventos a los botones
+
         runBtnMas();
         runBtnMenos();
         runBtnCrear();
@@ -147,7 +184,7 @@ public class PMenuServidor extends JPanel {
             }
         });
     }
-    
+
     private void runBtnMenos() {
         btnMenos.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -159,30 +196,56 @@ public class PMenuServidor extends JPanel {
             }
         });
     }
-    
+
     private void runBtnCrear() {
         btnCrear.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                String nombreServer = entradas.get(0).getText();
+                String nombreServer = ValidaciónYSanitizacion.sanitizarTexto(entradas.get(0).getText());
                 String ip = entradas.get(2).getText();
-                int puerto = entradas.get(3).getInt();
-                String nombreAdmin = entradas.get(4).getText();
-                
+                Integer puerto = entradas.get(3).getInt();
+                String nombreAdmin = ValidaciónYSanitizacion.sanitizarTexto(entradas.get(4).getText());
+
+                if (!ValidaciónYSanitizacion.esLongitudValida(nombreServer, 3, 20)) {
+                    JOptionPane.showMessageDialog(null, "El nombre del servidor debe tener entre 3 y 20 caracteres.", "NOMBRE DE SERVIDOR INVÁLIDO", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (capacidad <= 0) {
+                    JOptionPane.showMessageDialog(null, "La capacidad del servidor debe ser mayor a 0 para aceptar usuarios.", "CAPACIDAD INVÁLIDA", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (!ValidaciónYSanitizacion.esIpValida(ip)) {
+                    JOptionPane.showMessageDialog(null, "Por favor, ingrese una IP válida (ej. localhost o 192.168.1.1).", "IP INVÁLIDA", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (!ValidaciónYSanitizacion.esPuertoValido(puerto)) {
+                    JOptionPane.showMessageDialog(null, "El puerto debe ser un número válido entre 1024 y 65535.", "PUERTO INVÁLIDO", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (!ValidaciónYSanitizacion.esLongitudValida(nombreAdmin, 3, 15)) {
+                    JOptionPane.showMessageDialog(null, "El nombre de administrador debe tener entre 3 y 15 caracteres.", "ADMINISTRADOR INVÁLIDO", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 JChat chat = new JChat(nombreServer, nombreAdmin);
                 chat.setVisible(true);
-                limpiarEntradas();                
+                limpiarEntradas();
                 try {
                     Servidor servidor = new Servidor(nombreServer, nombreAdmin, ip, puerto, capacidad);
                     servidor.asignarComponentes(chat);
                     servidor.iniciarServidor();
                 } catch (IOException | ClassNotFoundException e) {
+                    JOptionPane.showMessageDialog(null, "Error crítico al iniciar el servidor.\nAsegúrese de que el puerto " + puerto + " no esté en uso.\nDetalle: " + e.getMessage(), "FALLO DE SERVIDOR", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
                 }
             }
         });
     }
-    
+
     private void runBtnRegresar(){
         btnRegresar.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -192,10 +255,9 @@ public class PMenuServidor extends JPanel {
             }
         });
     }
-    
+
     private void limpiarEntradas() {
         entradas.get(0).setText("");
-        entradas.get(1).setText("");
         entradas.get(2).setText("");
         entradas.get(3).setText("");
         entradas.get(4).setText("");
